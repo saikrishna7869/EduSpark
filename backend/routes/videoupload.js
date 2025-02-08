@@ -1,4 +1,4 @@
-import { videoupload,getvideos,getvideo,setrating,quizques} from "../controllers/videouploadController.js";
+import { videoupload,getvideos,getvideo,setrating,quizques,comments,addcomment,updatereply,getsubtitles} from "../controllers/videouploadController.js";
 
 import {Router} from 'express';
 
@@ -29,5 +29,9 @@ router.get("/getvideos",getvideos);
 router.get("/getvideo/:id",getvideo);
 router.put("/rating/:id",setrating);
 router.get("/takequiz/:id",quizques);
+router.get("/comments/:id",comments);
+router.post("/putcomment/:id1/:id2",addcomment);
+router.post("/reply/:id/:id2",updatereply);
+router.get("/subtitles/:id/:id2",getsubtitles);
 
 export default router;

@@ -124,3 +124,49 @@
 // };
 
 // export default ChatBot;
+import { useState } from "react";
+import axios from "axios";
+
+const ChatBot = () => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  const handleSend = async () => {
+    if (!query) return;
+    const temp = query;
+    setQuery("");
+    setMessages((prev) => [...prev, { text: temp, type: "user" }]);
+
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/chat", { temp });
+      setMessages((prev) => [...prev, { text: res.data.reply, type: "ai" }]);
+    } catch {
+      setMessages((prev) => [...prev, { text: "Failed to get a response.", type: "ai" }]);
+    }
+  };
+
+  return (
+    <div>
+      <button style={{position: "fixed",
+            bottom: 70,
+            right: 20,
+            }} onClick={() => setOpen(!open)}>Chat</button>
+      {open && (
+        <div style={{ position: "fixed", bottom: 90, right: 60, width: 300, padding: 10, background: "white", border: "1px solid black", borderRadius: 5 }}>
+          <div style={{ maxHeight: 200, overflowY: "auto" }}>
+            {messages.map((msg, i) => (
+              <div key={i} style={{ textAlign: msg.type === "user" ? "right" : "left" }}>
+                <p style={{ background: msg.type === "user" ? "#1976d2" : "#f5f5f5", color: msg.type === "user" ? "#fff" : "#000", padding: 5, borderRadius: 5, display: "inline-block" }}>{msg.text}</p>
+              </div>
+            ))}
+          </div>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask AI..." style={{ width: "100%", marginBottom: 5 }} />
+          <button onClick={handleSend} style={{ width: "100%" }}>Send</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ChatBot;

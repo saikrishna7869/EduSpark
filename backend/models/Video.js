@@ -60,7 +60,14 @@ const VideoSchema=new Schema({
         type: Schema.Types.ObjectId,
         ref: 'QuizQue'
 
-    }]
+    }],
+    subtitles:[
+        {
+            start:Number,
+            end:Number,
+            text:String
+        }
+    ]
 
 
 });

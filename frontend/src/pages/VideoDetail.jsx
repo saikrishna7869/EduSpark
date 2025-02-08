@@ -1,14 +1,21 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useAppStore } from "../store/index";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
+import VideoComment from "./VideoComment";
+import VideoSubtitles from "./VideoSubtitles";
+import { useRef } from "react";
 const VideoDetail = () => {
   const { id } = useParams(); // Get video ID from the URL
   const [video, setVideo] = useState(null);
   const [rating, setRating] = useState(null); // Holds the selected rating
   const [submitted, setSubmitted] = useState(false);
   const navigate=useNavigate();
+  const { userInfo } = useAppStore();
+  const [user] = useState(userInfo || "");
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -62,7 +69,9 @@ const VideoDetail = () => {
 
   return (
     <>
+    <div>
      <Navbar/>
+     </div>
    
     <div style={{marginTop:"100px"}}>
       <h1>{video.title}</h1>
@@ -89,6 +98,8 @@ const VideoDetail = () => {
             </label>
           ))}
         </div>
+         
+
         <button onClick={handleSubmitRating} disabled={rating === null}>
           Submit Rating
         </button>
@@ -96,8 +107,14 @@ const VideoDetail = () => {
         {submitted && <p>Thank you for your rating!</p>}
       </div>
       <div>
+          {/* <VideoSubtitles videoId={video._id} videoRef={videoRef}/> */}
+          </div>
+      <div>
         <button onClick={takeQuiz}> Take Quiz/Test</button>
       </div>
+        
+
+      <VideoComment videoId={video} userId={user?.id} />
 
     </div>
     </>

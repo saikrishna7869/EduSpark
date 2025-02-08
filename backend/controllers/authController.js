@@ -2,6 +2,9 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
 import User from "../models/User.js"
 import Educator from "../models/Educator.js"
+import dotenv from 'dotenv';
+dotenv.config();
+import axios from 'axios';
 
 export const register = async (req, res) => {
   try {
@@ -138,4 +141,34 @@ export const logout = async (req, res) => {
     console.error("Error logging out", error);
     res.status(500).json({ message: "Error Logging out", error });
   }
+};
+
+export const getchat=async (req,res)=>{
+    try {
+        const query = req.body.temp;
+        console.log("Received query:", query);
+    
+        const response = await axios.post(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+          { contents: [{ parts: [{ text: `give reply in less than two lines for the question: ${query}` }] }] },
+          { params: { key: process.env.GEMINI_API_KEY } }
+        );
+    
+        //console.log("Full Gemini response:", JSON.stringify(response.data, null, 2));
+    
+        const reply = response.data.candidates[0]?.content?.parts[0]?.text || "No response";
+    
+        //console.log("Gemini reply:", reply);
+    
+        res.json({ reply });
+      } catch (error) {
+        console.error("Error:", error);
+        if (error.response) {
+          console.error("Error details:", error.response.data);
+          res.status(error.response.status).json({ error: error.response.data.error.message || "Failed to fetch response" });
+        } else {
+          res.status(500).json({ error: "Failed to fetch response" });
+        }
+      }
+
 };

@@ -1,10 +1,10 @@
-const { text } = require("express");
-const mongoose=require("mongoose");
+
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 const commentSchema =new Schema({
     user:{
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Student',
 
     },
     text:{
@@ -13,9 +13,14 @@ const commentSchema =new Schema({
     },
     reply:{
         type:String,
-        
+        default:" "
 
     },
+    createdAt:{
+        type:Date,
+        default:Date.now()
+    }
 
 
 });
+export default mongoose.model('Comment', commentSchema);

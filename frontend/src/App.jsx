@@ -6,6 +6,7 @@ import UploadVideo from "./pages/UploadVideo";
 import { useAppStore } from "./store/index";
 import { useState, useEffect } from "react";
 import axios from "axios";
+
 import VideoDetail from "./pages/VideoDetail";
 import QuizDisplay from "./pages/QuizDisplay";
 
@@ -35,6 +36,7 @@ function App() {
         if (response.status === 200) {
           setUserInfo(response.data.user);
         } else {
+         
           setUserInfo(undefined);
         }
       } catch (error) {

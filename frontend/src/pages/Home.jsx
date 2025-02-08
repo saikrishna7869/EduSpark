@@ -3,6 +3,7 @@ import axios from "axios";
 import { useAppStore } from "../store/index";
 import Navbar from "./Navbar";
 import VideoCard from "./VideoCard";
+import ChatBot from "./ChatBot";
 
 const Home = () => {
   const { userInfo } = useAppStore();
@@ -39,11 +40,11 @@ const Home = () => {
           <VideoCard key={video._id} video={video} />
         ))}
       </div>
-
+{/* 
         <button style={{borderRadius:"50%",height:"50px",width:"50px",position: "fixed",
     bottom: "20px",
-    right: "20px"}}>Ai</button>
-    {/* {<ChatBot/>} */}
+    right: "20px"}}>Ai</button> */}
+    <ChatBot/>
     </div>
   );
 };

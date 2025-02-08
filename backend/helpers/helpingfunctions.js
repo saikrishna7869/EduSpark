@@ -4,9 +4,9 @@ dotenv.config();
 import axios from "axios";
 
 
-export const transcribeAudio=(audioPath, outputPath)=>{
+export const transcribeAudio=(audioPath, outputPath,subtitlepath)=>{
     return new Promise((resolve, reject) => {
-      const command = `python C:\\Users\\saikr\\HackProject\\open-ai\\whisper-script.py "${audioPath}" "${outputPath}" --model medium `;
+      const command = `python C:\\Users\\saikr\\EduSpark\\open-ai\\whisper-script.py "${audioPath}" "${outputPath}"  --model medium `;
       console.log("Executing:", command);
   
       exec(command, (error, stdout, stderr) => {
@@ -43,7 +43,7 @@ export const generateQuiz = async (storyText) => {
 
     try {
       const prompt = `
-        Generate a quiz with atmost 6 and atlest 2 multiple-choice questions based on the following text:
+        Generate a quiz with atmost 6 and atleast 2 multiple-choice questions based on the following text:
         "${storyText}"
         Each question should have 4 answer choices (A, B, C, D).
         Provide the correct answer along with a brief explanation.
@@ -96,5 +96,66 @@ export const generateQuiz = async (storyText) => {
     } catch (error) {
       console.error(" Error generating quiz:", error.message);
       return null;
+    }
+  };
+  export const generatesubtitle = async (subtitles, language) => {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+  
+    try {
+      const prompt = `
+        Convert the following subtitles: ${JSON.stringify(subtitles)} to **${language}**.
+        Rules:
+        1. Keep start and end timestamps EXACTLY as original
+        2. ONLY translate the 'text' field
+        3. Respond ONLY with valid JSON array in this EXACT format:
+           [{"start": 0.0, "end": 2.0, "text": "..."}, ...]
+        4. No markdown, no explanations, only plain JSON
+        5. Ensure proper JSON escaping for quotes and special characters
+        6. Maintain original array length and order
+      `;
+  
+      const response = await axios.post(
+        `${API_URL}?key=${GEMINI_API_KEY}`,
+        { contents: [{ parts: [{ text: prompt }] }] },
+        { headers: { "Content-Type": "application/json" } }
+      );
+  
+      // Extract generated text
+      const generatedText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      // Clean response - remove markdown, JSON wrappers, and trim whitespace
+      const cleanedText = generatedText
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .replace(/^[^{[]*/, '')  // Remove non-JSON prefix
+        .replace(/[^}\]]*$/, '') // Remove non-JJSON suffix
+        .trim();
+  
+      if (!cleanedText) throw new Error('Empty response from API');
+  
+      // Parse and validate
+      const parsed = JSON.parse(cleanedText);
+      
+      if (!Array.isArray(parsed)) throw new Error('Response is not an array');
+      if (parsed.length !== subtitles.length) throw new Error('Array length mismatch');
+      
+      parsed.forEach((item, index) => {
+        if (!item.start || !item.end || !item.text) {
+          throw new Error(`Missing fields in item ${index}`);
+        }
+        if (item.start !== subtitles[index].start || item.end !== subtitles[index].end) {
+          throw new Error('Timestamp mismatch at index ' + index);
+        }
+      });
+  
+      return parsed;
+    } catch (error) {
+      console.error('Translation Error:', {
+        message: error.message,
+        //responseText: generatedText?.slice(0, 200) + '...', // Log first 200 chars
+        stack: error.stack
+      });
+      throw new Error(`Subtitle translation failed:`);
     }
   };
